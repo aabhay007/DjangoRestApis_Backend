@@ -149,5 +149,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',  # Default permission
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }

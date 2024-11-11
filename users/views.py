@@ -17,20 +17,18 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'User registered successfully'}, status=201)
-        return Response(serializer.errors, status=400)
+            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+    
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            return Response({'message': 'Login successful'})
-        return Response({'error': 'Invalid credentials'}, status=400)
 
 class UserView(APIView):
     permission_classes = [IsAuthenticated]

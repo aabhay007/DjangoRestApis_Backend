@@ -6,17 +6,26 @@ from .models import Item
 import base64
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=True)
+    name = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'email']
+        fields = ['name', 'email', 'password']
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(
+            username=validated_data['email'],  # Use email as the username
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data['name']
+        )
         return user
 
 class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email']
     class Meta:
         model = User
         fields = ['id', 'username', 'email']
