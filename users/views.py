@@ -9,6 +9,18 @@ from django.shortcuts import get_object_or_404
 from .serializers import ItemSerializer
 from .models import Item
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.http import JsonResponse
+from datetime import timedelta
+
+class LogoutView(APIView):
+     permission_classes = [IsAuthenticated]
+def post(self, request):
+        response = JsonResponse({'message': 'Logout successful'})
+        # Clear the cookies by setting them to expire
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        return response
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -27,13 +39,87 @@ class UserView(APIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
     
+  
+    
 class LoginView(APIView):
     permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            login(request, user)
+            
+            # Generate access and refresh tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            # Set the cookies in the response
+            response = JsonResponse({'message': 'Login successful'})
+            response.set_cookie(
+                'access_token', 
+                access_token, 
+                httponly=True,  # Secure HttpOnly cookie
+                secure=True,  # Set to True if using HTTPS
+                samesite='Strict',  # Ensures cookies are sent only in first-party context
+                max_age=timedelta(hours=1)  # Optional: Set expiration time
+            )
+            response.set_cookie(
+                'refresh_token', 
+                str(refresh), 
+                httponly=True, 
+                secure=True,  # Set to True if using HTTPS
+                samesite='Strict',
+                max_age=timedelta(days=7)  # Optional: Set expiration time for refresh token
+            )
+            
+            return response
+        return JsonResponse({'error': 'Invalid credentials'}, status=400)
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            login(request, user)
+
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            # Check if we're in a development environment
+            is_dev = request.get_host().startswith("localhost")
+
+            # Set access and refresh tokens in HttpOnly cookies
+            response = JsonResponse({'message': 'Login successful'})
+            response.set_cookie(
+                'access_token', access_token,
+                httponly=True,
+                secure=not is_dev,  # Use HTTPS only in production
+                samesite='None' if not is_dev else 'Strict',  # 'None' for cross-origin requests
+                max_age=timedelta(hours=1)  # Access token expires in 1 hour
+            )
+            response.set_cookie(
+                'refresh_token', refresh_token,
+                httponly=True,
+                secure=not is_dev,  # Use HTTPS only in production
+                samesite='None' if not is_dev else 'Strict',  # 'None' for cross-origin requests
+                max_age=timedelta(days=7)  # Refresh token expires in 7 days
+            )
+            return response
+
+        return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        print("Cookies:", request.COOKIES)  # Debugging log for cookies
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
@@ -72,3 +158,5 @@ class ItemDetailView(APIView):
         item = get_object_or_404(Item, pk=pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
