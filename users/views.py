@@ -10,8 +10,7 @@ from .serializers import ItemSerializer
 from .models import Item
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.http import JsonResponse
-from datetime import timedelta
+from .permissions import IsSuperUserOrReadOnly
 
 
 class RegisterView(APIView):
@@ -21,8 +20,12 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "User registered successfully"},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
@@ -31,12 +34,13 @@ class UserView(APIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+        username = request.data.get("username")
+        password = request.data.get("password")
         user = authenticate(request, username=username, password=password)
 
         if user:
@@ -48,16 +52,20 @@ class LoginView(APIView):
             refresh_token = str(refresh)
 
             # Return tokens in the response body
-            return Response({
-                'message': 'Login successful',
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }, status=200)
+            return Response(
+                {
+                    "message": "Login successful",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                },
+                status=200,
+            )
 
-        return Response({'error': 'Invalid credentials'}, status=400)
+        return Response({"error": "Invalid credentials"}, status=400)
+
 
 class ItemListCreateView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsSuperUserOrReadOnly]
 
     def get(self, request):
         items = Item.objects.all()
@@ -71,8 +79,9 @@ class ItemListCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ItemDetailView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsSuperUserOrReadOnly]
 
     def get(self, request, pk):
         item = get_object_or_404(Item, pk=pk)
@@ -91,5 +100,3 @@ class ItemDetailView(APIView):
         item = get_object_or_404(Item, pk=pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    
