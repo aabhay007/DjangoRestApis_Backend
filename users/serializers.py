@@ -6,6 +6,7 @@ from .models import Item
 import base64
 
 
+# region user
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     name = serializers.CharField(write_only=True, required=True)
@@ -15,34 +16,33 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ["name", "email", "password"]
 
     def create(self, validated_data):
-        # Create the user as a non-superuser and non-staff by default
         user = User.objects.create_user(
-            username=validated_data["email"],  # Use email as the username
+            username=validated_data["email"],
             email=validated_data["email"],
             password=validated_data["password"],
             first_name=validated_data["name"],
         )
 
-        # Ensure the user is not a superuser or staff
         user.is_superuser = False
         user.is_staff = False
         user.save()
 
         return user
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "first_name","is_superuser"]
+        fields = ["id", "username", "email", "first_name", "is_superuser"]
 
 
+# endregion
+
+
+# region items
 class ItemSerializer(serializers.ModelSerializer):
-    image = serializers.CharField(
-        write_only=True, required=False
-    )  # For incoming base64 image
-    image_url = (
-        serializers.SerializerMethodField()
-    )  # For outgoing base64 image in response
+    image = serializers.CharField(write_only=True, required=False)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -58,13 +58,10 @@ class ItemSerializer(serializers.ModelSerializer):
         ]
 
     def get_image_url(self, obj):
-        # Check if the image field contains data
         if obj.image:
             try:
-                # Encode the binary data as base64 and return it as a data URL
                 return f"data:image/png;base64,{base64.b64encode(obj.image).decode('utf-8')}"
             except Exception as e:
-                # Log the error (or handle it as needed)
                 print(f"Error encoding image: {e}")
                 return None
         return None
@@ -90,3 +87,6 @@ class ItemSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"Invalid image format: {e}")
 
         return super().update(instance, validated_data)
+
+
+# endregion

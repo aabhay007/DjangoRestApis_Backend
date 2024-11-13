@@ -13,6 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsSuperUserOrReadOnly
 
 
+# region Authentication
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -25,14 +26,6 @@ class RegisterView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
 
 
 class LoginView(APIView):
@@ -48,14 +41,10 @@ class LoginView(APIView):
 
             # Generate refresh token
             refresh = RefreshToken.for_user(user)
-
-            # Add is_superuser to the token payload (custom claim)
             refresh.payload["is_superuser"] = user.is_superuser
-
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
 
-            # Return tokens in the response body
             return Response(
                 {
                     "message": "Login successful",
@@ -67,6 +56,23 @@ class LoginView(APIView):
 
         return Response({"error": "Invalid credentials"}, status=400)
 
+
+# endregion
+
+
+# region User
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+
+# endregion
+
+
+# region Items
 class ItemListCreateView(APIView):
     permission_classes = [IsSuperUserOrReadOnly]
 
@@ -86,7 +92,7 @@ class ItemListCreateView(APIView):
 class ItemDetailView(APIView):
     permission_classes = [IsSuperUserOrReadOnly]
 
-    def get(self, request, pk):
+    def get(self,request, pk):
         item = get_object_or_404(Item, pk=pk)
         serializer = ItemSerializer(item)
         return Response(serializer.data)
@@ -103,3 +109,6 @@ class ItemDetailView(APIView):
         item = get_object_or_404(Item, pk=pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# endregion
