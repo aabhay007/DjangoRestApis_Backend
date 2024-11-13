@@ -77,7 +77,12 @@ class ItemListCreateView(APIView):
     permission_classes = [IsSuperUserOrReadOnly]
 
     def get(self, request):
-        items = Item.objects.all()
+        search_query = request.query_params.get("search", None)
+        if search_query:
+            items = Item.objects.filter(name__icontains=search_query)
+        else:
+            items = Item.objects.all()
+
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
 
@@ -92,7 +97,7 @@ class ItemListCreateView(APIView):
 class ItemDetailView(APIView):
     permission_classes = [IsSuperUserOrReadOnly]
 
-    def get(self,request, pk):
+    def get(self, request, pk):
         item = get_object_or_404(Item, pk=pk)
         serializer = ItemSerializer(item)
         return Response(serializer.data)
