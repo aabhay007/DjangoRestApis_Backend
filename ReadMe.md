@@ -3,6 +3,11 @@
 1. To Run the application:
     python manage.py runserver
 
+
+# other packages
+pip install djangorestframework-simplejwt
+
+
 Note: If you dont have python installed in your sysytem 
  then install it first and all other require packages for DjangoRestFramework
 
