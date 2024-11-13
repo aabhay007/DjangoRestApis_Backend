@@ -46,8 +46,12 @@ class LoginView(APIView):
         if user:
             login(request, user)
 
-            # Generate tokens
+            # Generate refresh token
             refresh = RefreshToken.for_user(user)
+
+            # Add is_superuser to the token payload (custom claim)
+            refresh.payload["is_superuser"] = user.is_superuser
+
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
 
@@ -62,7 +66,6 @@ class LoginView(APIView):
             )
 
         return Response({"error": "Invalid credentials"}, status=400)
-
 
 class ItemListCreateView(APIView):
     permission_classes = [IsSuperUserOrReadOnly]
