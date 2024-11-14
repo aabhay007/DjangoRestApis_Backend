@@ -14,3 +14,10 @@ class Item(models.Model):
         return self.name
 
     # endregion
+
+#region task
+class FileUpload(models.Model):
+    file = models.FileField(upload_to='uploads/')
+    email = models.EmailField()
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+#endregion

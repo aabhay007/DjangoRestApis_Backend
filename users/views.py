@@ -6,11 +6,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login
 from .serializers import RegisterSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
-from .serializers import ItemSerializer
+from .serializers import ItemSerializer, FileUploadSerializer
 from .models import Item
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsSuperUserOrReadOnly
+from django.core.mail import EmailMessage
 
 
 # region Authentication
@@ -114,6 +115,37 @@ class ItemDetailView(APIView):
         item = get_object_or_404(Item, pk=pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# endregion
+
+
+# region task
+class FileUploadView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = FileUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            file_instance = serializer.save()
+            uploaded_file = request.FILES["file"]
+            content_type = uploaded_file.content_type
+            email = EmailMessage(
+                subject="File Uploaded",
+                body="Please find the attached file.",
+                to=[file_instance.email],
+            )
+            email.attach(
+                file_instance.file.name, file_instance.file.read(), content_type
+            )
+            email.send()
+
+            return Response(
+                {"message": "File uploaded and email sent successfully."},
+                status=status.HTTP_201_CREATED,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # endregion

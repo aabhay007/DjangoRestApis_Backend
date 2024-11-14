@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Item
+from .models import Item, FileUpload
 import base64
 
 
@@ -90,3 +90,10 @@ class ItemSerializer(serializers.ModelSerializer):
 
 
 # endregion
+
+#region task
+class FileUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileUpload
+        fields = ['file', 'email']
+#endregion

@@ -2,7 +2,7 @@
 
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import RegisterView, LoginView, UserView, ItemListCreateView, ItemDetailView
+from .views import RegisterView, LoginView, UserView, ItemListCreateView, ItemDetailView, FileUploadView
 
 urlpatterns = [
     # region authhetication routes
@@ -19,5 +19,8 @@ urlpatterns = [
     path("item-detail/<int:pk>/", ItemDetailView.as_view(), name="item-detail"),
     path("update-item/<int:pk>/", ItemDetailView.as_view(), name="update-item"),
     path("delete-item/<int:pk>/", ItemDetailView.as_view(), name="delete-item"),
+    # endregion
+    # region task
+     path('upload/', FileUploadView.as_view(), name='file-upload'),
     # endregion
 ]
