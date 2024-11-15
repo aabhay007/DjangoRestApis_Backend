@@ -2,7 +2,7 @@
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, login
 from .serializers import RegisterSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
@@ -65,7 +65,7 @@ class LoginView(APIView):
 
 # region User
 class UserView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         serializer = UserSerializer(request.user)
@@ -75,14 +75,14 @@ class UserView(APIView):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
 
 # Detail View for Retrieving, Updating, and Deleting a User
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
     def delete(self, request, *args, **kwargs):
         """
