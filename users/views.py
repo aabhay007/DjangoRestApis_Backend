@@ -12,6 +12,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsSuperUserOrReadOnly
 from django.core.mail import EmailMessage
+from rest_framework import generics
+from django.contrib.auth.models import User
 
 
 # region Authentication
@@ -68,6 +70,12 @@ class UserView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
 
 # endregion
