@@ -65,7 +65,7 @@ class LoginView(APIView):
 
 # region User
 class UserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         serializer = UserSerializer(request.user)
@@ -73,6 +73,30 @@ class UserView(APIView):
 
 
 class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+
+# Detail View for Retrieving, Updating, and Deleting a User
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Custom delete response.
+        """
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT
+        )
+
+
+# List View for Listing and Creating Users
+class UserListView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]

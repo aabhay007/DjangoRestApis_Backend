@@ -10,6 +10,7 @@ from .views import (
     ItemDetailView,
     FileUploadView,
     UserListView,
+    UserDetailView
 )
 
 urlpatterns = [
@@ -21,6 +22,7 @@ urlpatterns = [
     # region user routes
     path("user/", UserView.as_view(), name="user"),
     path("users/", UserListView.as_view(), name="user-list"),
+    path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
     # endregion
     # region item routes
     path("items/", ItemListCreateView.as_view(), name="item-list"),
