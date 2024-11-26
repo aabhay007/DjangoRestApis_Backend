@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 
 # region items
 class Item(models.Model):
@@ -14,6 +14,22 @@ class Item(models.Model):
         return self.name
 
     # endregion
+
+#region Cart
+
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+#endregion
+
 
 #region task
 class FileUpload(models.Model):

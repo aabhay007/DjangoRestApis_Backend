@@ -10,7 +10,8 @@ from .views import (
     ItemDetailView,
     FileUploadView,
     UserListView,
-    UserDetailView
+    UserDetailView,
+    AddToCartView,
 )
 
 urlpatterns = [
@@ -22,7 +23,7 @@ urlpatterns = [
     # region user routes
     path("user/", UserView.as_view(), name="user"),
     path("users/", UserListView.as_view(), name="user-list"),
-    path('users/<int:pk>/', UserDetailView.as_view(), name='user-detail'),
+    path("users/<int:pk>/", UserDetailView.as_view(), name="user-detail"),
     # endregion
     # region item routes
     path("items/", ItemListCreateView.as_view(), name="item-list"),
@@ -30,6 +31,9 @@ urlpatterns = [
     path("item-detail/<int:pk>/", ItemDetailView.as_view(), name="item-detail"),
     path("update-item/<int:pk>/", ItemDetailView.as_view(), name="update-item"),
     path("delete-item/<int:pk>/", ItemDetailView.as_view(), name="delete-item"),
+    # endregion
+    # region cart
+    path("cart/add/", AddToCartView.as_view(), name="add-to-cart"),
     # endregion
     # region task
     path("upload/", FileUploadView.as_view(), name="file-upload"),

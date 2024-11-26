@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, login
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import RegisterSerializer, UserSerializer, CartItemSerializer
 from django.shortcuts import get_object_or_404
 from .serializers import ItemSerializer, FileUploadSerializer
-from .models import Item
+from .models import Item, Cart, CartItem
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsSuperUserOrReadOnly
@@ -151,6 +151,35 @@ class ItemDetailView(APIView):
 
 # endregion
 
+
+#region Cart
+class AddToCartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        item_id = request.data.get("item_id")
+        quantity = request.data.get("quantity", 1)
+
+        if not item_id:
+            return Response({"error": "Item ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        item = get_object_or_404(Item, id=item_id)
+
+        # Get or create the cart for the current user
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        # Check if the item is already in the cart
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, item=item)
+
+        if not created:
+            cart_item.quantity += int(quantity)
+        else:
+            cart_item.quantity = int(quantity)
+
+        cart_item.save()
+
+        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+#endregion
 
 # region task
 class FileUploadView(APIView):

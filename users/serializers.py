@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Item, FileUpload
+from .models import Item, FileUpload, CartItem, Cart
 import base64
 
 
@@ -90,6 +90,25 @@ class ItemSerializer(serializers.ModelSerializer):
 
 
 # endregion
+
+#region Cart
+class CartItemSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source="item.name", read_only=True)
+
+    class Meta:
+        model = CartItem
+        fields = ["id", "item", "item_name", "quantity", "added_at"]
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ["id", "user", "items", "created_at", "updated_at"]
+        read_only_fields = ["user", "created_at", "updated_at"]
+
+#endregion
+
 
 #region task
 class FileUploadSerializer(serializers.ModelSerializer):
