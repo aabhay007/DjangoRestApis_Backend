@@ -1,4 +1,4 @@
-# Django E-Commerce API
+# Django E-Commerce API🔥
 
 ## Overview
 This is a Django-based RESTful API for an e-commerce application that allows user registration, login, item management, and file uploads. The API is built using Django Rest Framework and includes JWT authentication for secure access.
