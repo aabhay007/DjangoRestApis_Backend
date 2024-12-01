@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, login
-from .serializers import RegisterSerializer, UserSerializer, CartItemSerializer
+from .serializers import RegisterSerializer, UserSerializer, CartItemSerializer, CartSerializer
 from django.shortcuts import get_object_or_404
 from .serializers import ItemSerializer, FileUploadSerializer
 from .models import Item, Cart, CartItem
@@ -153,6 +153,35 @@ class ItemDetailView(APIView):
 
 
 #region Cart
+
+class CartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UpdateCartItemView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, cart_item_id):
+        # Update the quantity of a specific cart item
+        quantity = request.data.get("quantity")
+        if not quantity or int(quantity) <= 0:
+            return Response({"error": "Quantity must be a positive integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=request.user)
+        cart_item.quantity = int(quantity)
+        cart_item.save()
+        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_200_OK)
+
+    def delete(self, request, cart_item_id):
+        # Remove an item from the cart
+        cart_item = get_object_or_404(CartItem, id=cart_item_id, cart__user=request.user)
+        cart_item.delete()
+        return Response({"message": "Item removed from cart."}, status=status.HTTP_204_NO_CONTENT)
+    
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -179,6 +208,8 @@ class AddToCartView(APIView):
         cart_item.save()
 
         return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+    
+    
 #endregion
 
 # region task

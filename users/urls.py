@@ -12,6 +12,8 @@ from .views import (
     UserListView,
     UserDetailView,
     AddToCartView,
+    CartView,
+    UpdateCartItemView
 )
 
 urlpatterns = [
@@ -34,6 +36,8 @@ urlpatterns = [
     # endregion
     # region cart
     path("cart/add/", AddToCartView.as_view(), name="add-to-cart"),
+    path('cart/', CartView.as_view(), name='view-cart'),
+    path('cart/item/<int:cart_item_id>/', UpdateCartItemView.as_view(), name='update-cart-item'),
     # endregion
     # region task
     path("upload/", FileUploadView.as_view(), name="file-upload"),
