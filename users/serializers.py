@@ -94,10 +94,22 @@ class ItemSerializer(serializers.ModelSerializer):
 #region Cart
 class CartItemSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source="item.name", read_only=True)
+    item_price = serializers.DecimalField(source="item.price", max_digits=10, decimal_places=2, read_only=True)
+    item_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
-        fields = ["id", "item", "item_name", "quantity", "added_at"]
+        fields = ["id", "item", "item_name", "item_price", "item_image_url", "quantity", "added_at"]
+
+    def get_item_image_url(self, obj):
+        if obj.item.image:
+            try:
+                return f"data:image/png;base64,{base64.b64encode(obj.item.image).decode('utf-8')}"
+            except Exception as e:
+                print(f"Error encoding image: {e}")
+                return None
+        return None
+
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -106,6 +118,7 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ["id", "user", "items", "created_at", "updated_at"]
         read_only_fields = ["user", "created_at", "updated_at"]
+
 
 #endregion
 
