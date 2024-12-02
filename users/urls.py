@@ -13,7 +13,8 @@ from .views import (
     UserDetailView,
     AddToCartView,
     CartView,
-    UpdateCartItemView
+    UpdateCartItemView,CreatePaymentIntentView, 
+    stripe_webhook
 )
 
 urlpatterns = [
@@ -39,6 +40,10 @@ urlpatterns = [
     path('cart/', CartView.as_view(), name='view-cart'),
     path('cart/item/<int:cart_item_id>/', UpdateCartItemView.as_view(), name='update-cart-item'),
     # endregion
+    #region Payment
+     path('create-payment-intent/', CreatePaymentIntentView.as_view(), name='create-payment-intent'),
+    path('webhook/', stripe_webhook, name='stripe-webhook'),
+    #endregion
     # region task
     path("upload/", FileUploadView.as_view(), name="file-upload"),
     # endregion
