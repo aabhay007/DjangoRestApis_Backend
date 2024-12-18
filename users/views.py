@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, login
-from .serializers import RegisterSerializer, UserSerializer, CartItemSerializer, CartSerializer
+from .serializers import RegisterSerializer, UserSerializer, CartItemSerializer, CartSerializer, ContactMessageSerializer
 from django.shortcuts import get_object_or_404
 from .serializers import ItemSerializer, FileUploadSerializer
-from .models import Item, Cart, CartItem
+from .models import Item, Cart, CartItem, ContactMessage
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .permissions import IsSuperUserOrReadOnly
@@ -15,6 +15,7 @@ from django.core.mail import EmailMessage
 from rest_framework import generics
 from django.contrib.auth.models import User
 import stripe
+from rest_framework.decorators import api_view
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -279,3 +280,40 @@ class FileUploadView(APIView):
 
 
 # endregion
+
+#region contact_us
+@api_view(['GET', 'POST', 'DELETE'])
+def contact_us(request):
+    if request.method == 'POST':
+        # Handle POST request: create a new contact message
+        serializer = ContactMessageSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Save the contact message to the database
+            contact_message = serializer.save()
+            return Response({"message": "Your message has been sent successfully."}, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'GET':
+        # Handle GET request: retrieve all contact messages
+        contact_messages = ContactMessage.objects.all()
+        serializer = ContactMessageSerializer(contact_messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'DELETE':
+        # Handle DELETE request: delete a specific contact message
+        contact_message_id = request.data.get('id')
+        
+        if not contact_message_id:
+            return Response({"error": "ID is required to delete the contact message."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Find and delete the contact message
+            contact_message = ContactMessage.objects.get(id=contact_message_id)
+            contact_message.delete()
+            return Response({"message": "Contact message deleted successfully."}, status=status.HTTP_200_OK)
+        
+        except ContactMessage.DoesNotExist:
+            return Response({"error": "Contact message not found."}, status=status.HTTP_404_NOT_FOUND)
+#endregion

@@ -15,7 +15,7 @@ class Item(models.Model):
 
     # endregion
 
-#region Cart
+#region cart
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
@@ -30,7 +30,7 @@ class CartItem(models.Model):
 
 #endregion
 
-#region Payment
+#region cayment
 class Payment(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -39,9 +39,20 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 #endregion
 
-#region task
+#region file_upload
 class FileUpload(models.Model):
     file = models.FileField(upload_to='uploads/')
     email = models.EmailField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
+#endregion
+
+#region contact_us
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    message = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} ({self.email})"
 #endregion

@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Item, FileUpload, CartItem, Cart
+from .models import Item, FileUpload, CartItem, Cart, ContactMessage
 import base64
 
 
@@ -91,7 +91,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
 # endregion
 
-#region Cart
+
+#region cart
 class CartItemSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source="item.name", read_only=True)
     item_price = serializers.DecimalField(source="item.price", max_digits=10, decimal_places=2, read_only=True)
@@ -123,9 +124,17 @@ class CartSerializer(serializers.ModelSerializer):
 #endregion
 
 
-#region task
+#region file_upload
 class FileUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileUpload
         fields = ['file', 'email']
+#endregion
+
+
+#region contact_us
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = ['id','name', 'email', 'message']
 #endregion
